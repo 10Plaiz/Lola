@@ -106,7 +106,7 @@ const OnboardingModal: React.FC = () => {
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
                     className="w-full pl-12 pr-4 py-3 bg-white border border-coffee-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-coffee-500 text-coffee-900 placeholder-coffee-300 transition-all"
-                    placeholder="Enter 6-digit code"
+                    placeholder="Enter 8-digit code"
                   />
                 </div>
                 <p className="text-[10px] text-coffee-500 ml-1">Check your email for the code we just sent.</p>
