@@ -346,17 +346,17 @@ const MenuPage: React.FC = () => {
                 {paymentMethod === 'gcash' && (
                   <div className="space-y-4 animate-fade-in">
                     {/* GCash QR Code & Number */}
-                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center space-y-3">
-                      <p className="text-xs font-bold text-blue-700 uppercase tracking-widest">Send Payment via GCash</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center space-y-2">
+                      <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Send Payment via GCash</p>
                       <div className="flex justify-center">
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=09695591888`}
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=09695591888`}
                           alt="GCash QR Code"
-                          className="w-48 h-48 rounded-xl border-2 border-blue-200 bg-white p-2"
+                          className="w-32 h-32 rounded-lg border border-blue-200 bg-white p-1"
                         />
                       </div>
-                      <p className="text-lg font-bold text-blue-900 tracking-wider">0969 559 1888</p>
-                      <p className="text-xs text-blue-600">Please send <span className="font-bold">₱{cartTotal}</span> to this number before uploading your receipt</p>
+                      <p className="text-sm font-bold text-blue-900 tracking-wider">0969 559 1888</p>
+                      <p className="text-[10px] text-blue-600">Send <span className="font-bold">₱{cartTotal}</span> to this number before uploading your receipt</p>
                     </div>
 
                     {/* Receipt Upload */}
