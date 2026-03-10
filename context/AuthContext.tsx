@@ -118,12 +118,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     if (data.user) {
+      // Set cookie immediately so the API call can authenticate
+      const session = data.session;
+      if (session) {
+        document.cookie = `sb-access-token=${session.access_token}; path=/; SameSite=None; Secure`;
+      }
+
       try {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (session) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
         const response = await fetch('/api/auth/create-profile', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers,
           body: JSON.stringify({ username, phone }),
         });
         

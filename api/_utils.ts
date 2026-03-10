@@ -17,7 +17,13 @@ export function getSupabase(): SupabaseClient {
 }
 
 export async function authenticate(req: VercelRequest) {
-  const token = req.cookies?.['sb-access-token'];
+  let token = req.cookies?.['sb-access-token'];
+  if (!token) {
+    const auth = req.headers['authorization'];
+    if (auth && auth.startsWith('Bearer ')) {
+      token = auth.slice(7);
+    }
+  }
   if (!token) return null;
 
   const supabase = getSupabase();
