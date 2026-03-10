@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Order, OrderItem } from '../types';
-import { Package, Clock, CheckCircle, XCircle, CreditCard, Banknote, FileText, X, MessageSquare, PhoneCall, Truck, Settings, ShoppingBag, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, CreditCard, Banknote, FileText, X, Settings, ShoppingBag, ChevronLeft, ChevronRight, AlertTriangle } from 'lucide-react';
 
 const CustomerDashboard: React.FC = () => {
   const { user, updatePassword, deleteAccount } = useAuth();
@@ -191,7 +191,6 @@ const CustomerDashboard: React.FC = () => {
                 ) : (
                   <>
                     {paginatedOrders.map((order) => {
-                      const rider = typeof order.riderInfo === 'string' ? JSON.parse(order.riderInfo) : order.riderInfo;
                       return (
                         <div key={order.id} className="p-6 hover:bg-coffee-50/20 transition-colors">
                           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -224,30 +223,6 @@ const CustomerDashboard: React.FC = () => {
                             </div>
                           </div>
                           
-                          {/* Rider Info Section */}
-                          {rider && (
-                            <div className="mb-4 bg-blue-50 border border-blue-100 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center">
-                                  <Truck size={24} />
-                                </div>
-                                <div>
-                                  <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Grab Delivery Rider Assigned</p>
-                                  <h4 className="font-bold text-slate-900">{rider.name} • <span className="text-blue-700">{rider.plate}</span></h4>
-                                  <p className="text-xs text-slate-500">{rider.type}</p>
-                                </div>
-                              </div>
-                              <div className="flex gap-2 w-full md:w-auto">
-                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-blue-200 text-blue-600 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all">
-                                  <MessageSquare size={16} /> Message
-                                </button>
-                                <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md">
-                                  <PhoneCall size={16} /> Call
-                                </button>
-                              </div>
-                            </div>
-                          )}
-
                           <div className="bg-coffee-50/50 rounded-xl p-4">
                             <ul className="space-y-2">
                               {order.items.map((item, idx) => (

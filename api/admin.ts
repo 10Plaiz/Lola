@@ -45,9 +45,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       let updateData: any = { receiptGenerated: true };
       if (order.paymentMethod === 'gcash') {
         updateData.revenueAdded = true;
-        updateData.riderInfo = {
-          name: 'Kuya Jojo', phone: '0917-555-0123', plate: 'ABC 1234', type: 'GrabFood Rider'
-        };
       }
       await supabase.from('orders').update(updateData).eq('id', id);
       return res.json({ success: true, receiptId });

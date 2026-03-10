@@ -28,7 +28,8 @@ import {
   Trash2,
   Calendar,
   Phone,
-  Plus
+  Plus,
+  Image
 } from 'lucide-react';
 
 const AdminDashboard: React.FC = () => {
@@ -66,6 +67,7 @@ const AdminDashboard: React.FC = () => {
   const [newMenuItem, setNewMenuItem] = useState<Partial<MenuItem>>({ name: '', description: '', price: '', category: 'Coffee', imageUrl: '' });
   const [editingMenuItem, setEditingMenuItem] = useState<MenuItem | null>(null);
   const [editingStock, setEditingStock] = useState<Record<number, string>>({});
+  const [paymentProofImage, setPaymentProofImage] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -387,6 +389,14 @@ const AdminDashboard: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="text-sm font-bold text-slate-900">{order.username}</div>
                         <div className="text-xs text-slate-500 uppercase">{order.paymentMethod}</div>
+                        {order.paymentMethod === 'gcash' && order.gcashReceipt && (
+                          <button
+                            onClick={() => setPaymentProofImage(order.gcashReceipt!)}
+                            className="mt-1 inline-flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            <Image size={12} /> View Payment Proof
+                          </button>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-xs text-slate-600">
@@ -1119,6 +1129,40 @@ const AdminDashboard: React.FC = () => {
                 className="w-full py-4 bg-coffee-600 text-white rounded-2xl font-bold shadow-lg hover:bg-coffee-700 transition-all"
               >
                 {editingMenuItem ? 'Save Changes' : 'Add Item'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Proof Modal */}
+      {paymentProofImage && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-coffee-900/60 backdrop-blur-sm" onClick={() => setPaymentProofImage(null)}></div>
+          <div className="relative bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up">
+            <div className="bg-blue-600 p-6 text-white text-center relative">
+              <button 
+                onClick={() => setPaymentProofImage(null)}
+                className="absolute top-4 right-4 text-blue-200 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+              <h2 className="text-2xl font-serif font-bold">GCash Payment Proof</h2>
+              <p className="text-blue-100 text-sm">Customer uploaded receipt screenshot</p>
+            </div>
+            <div className="p-6">
+              <img 
+                src={paymentProofImage} 
+                alt="GCash Payment Proof" 
+                className="w-full max-h-[60vh] object-contain rounded-xl border border-slate-200"
+              />
+            </div>
+            <div className="p-6 bg-slate-50 border-t border-slate-100">
+              <button 
+                onClick={() => setPaymentProofImage(null)}
+                className="w-full py-3 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-100 transition-all shadow-sm"
+              >
+                Close
               </button>
             </div>
           </div>

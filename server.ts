@@ -256,7 +256,7 @@ async function startServer() {
 
   // Orders
   app.post('/api/orders', authenticate, async (req: any, res) => {
-    const { items, total, paymentMethod, gcashNumber } = req.body;
+    const { items, total, paymentMethod, gcashNumber, gcashReceipt } = req.body;
     const id = 'ORD-' + Date.now();
     const numericTotal = parseFloat(total.replace('₱', ''));
     
@@ -270,6 +270,7 @@ async function startServer() {
         total: numericTotal,
         paymentMethod,
         gcashNumber,
+        gcashReceipt: gcashReceipt || null,
         status: 'pending'
       })
       .select()
@@ -348,12 +349,6 @@ async function startServer() {
     let updateData: any = { receiptGenerated: true };
     if (order.paymentMethod === 'gcash') {
       updateData.revenueAdded = true;
-      updateData.riderInfo = {
-        name: 'Kuya Jojo',
-        phone: '0917-555-0123',
-        plate: 'ABC 1234',
-        type: 'GrabFood Rider'
-      };
     }
     
     await getSupabase().from('orders').update(updateData).eq('id', orderId);

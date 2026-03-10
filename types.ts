@@ -22,9 +22,9 @@ export interface Order {
   total: string;
   paymentMethod: 'gcash' | 'cash';
   gcashNumber?: string;
+  gcashReceipt?: string;
   status: 'pending' | 'accepted' | 'completed' | 'cancelled';
   receiptGenerated: boolean;
-  riderInfo?: string; // JSON string
   createdAt: string;
 }
 
