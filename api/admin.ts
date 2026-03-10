@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authenticate, requireAdmin, getSupabase, ITEM_INGREDIENTS } from '../_utils';
+import { authenticate, requireAdmin, getSupabase, ITEM_INGREDIENTS } from './_utils';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -8,37 +8,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!requireAdmin(user, res)) return;
 
   const supabase = getSupabase();
-  const pathSegments = Array.isArray(req.query.path) ? req.query.path : [req.query.path];
+
+  // Parse sub-path from URL: /api/admin/orders/123/finish -> ['orders','123','finish']
+  const url = req.url || '';
+  const match = url.match(/\/api\/admin\/?(.*)$/);
+  const subPath = match ? match[1].split('?')[0] : '';
+  const pathSegments = subPath.split('/').filter(Boolean);
   const [resource, id, action] = pathSegments;
+
+  console.log('[admin] URL:', url, '| resource:', resource, '| id:', id, '| action:', action, '| method:', req.method);
 
   // --- ORDERS ---
   if (resource === 'orders') {
-    // GET /api/admin/orders
     if (!id && req.method === 'GET') {
       const { data, error } = await supabase.from('orders').select('*').order('createdAt', { ascending: false });
       if (error) return res.status(500).json({ error: 'Failed to fetch orders' });
       return res.json(data.map((o: any) => ({ ...o, total: `₱${o.total}` })));
     }
-
-    // PATCH /api/admin/orders/:id
     if (id && !action && req.method === 'PATCH') {
       await supabase.from('orders').update({ status: req.body.status }).eq('id', id);
       return res.json({ success: true });
     }
-
-    // POST /api/admin/orders/:id/generate-receipt
     if (id && action === 'generate-receipt' && req.method === 'POST') {
       const { data: order } = await supabase.from('orders').select('*').eq('id', id).single();
       if (!order) return res.status(404).json({ error: 'Order not found' });
 
       const receiptId = 'REC-' + Date.now();
       const content = {
-        orderId: id,
-        customer: order.username,
-        items: order.items,
-        total: order.total,
-        paymentMethod: order.paymentMethod,
-        date: new Date().toISOString()
+        orderId: id, customer: order.username, items: order.items,
+        total: order.total, paymentMethod: order.paymentMethod, date: new Date().toISOString()
       };
 
       const { error: receiptError } = await supabase.from('receipts').insert({ id: receiptId, orderId: id, content });
@@ -48,18 +46,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (order.paymentMethod === 'gcash') {
         updateData.revenueAdded = true;
         updateData.riderInfo = {
-          name: 'Kuya Jojo',
-          phone: '0917-555-0123',
-          plate: 'ABC 1234',
-          type: 'GrabFood Rider'
+          name: 'Kuya Jojo', phone: '0917-555-0123', plate: 'ABC 1234', type: 'GrabFood Rider'
         };
       }
-
       await supabase.from('orders').update(updateData).eq('id', id);
       return res.json({ success: true, receiptId });
     }
-
-    // POST /api/admin/orders/:id/finish
     if (id && action === 'finish' && req.method === 'POST') {
       const { data: order } = await supabase.from('orders').select('*').eq('id', id).single();
       if (!order) return res.status(404).json({ error: 'Order not found' });
@@ -72,7 +64,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             await supabase.from('inventory').update({ stock: Math.max(0, inv.stock - item.quantity) }).eq('name', ingredient);
           }
         }
-
         const price = typeof item.price === 'string' ? parseFloat(item.price.replace('₱', '')) : item.price;
         const revenue = price * item.quantity;
         const now = new Date().toISOString();
@@ -81,17 +72,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (existingStat) {
           await supabase.from('product_stats').update({
             totalSales: existingStat.totalSales + item.quantity,
-            totalRevenue: existingStat.totalRevenue + revenue,
-            lastSold: now
+            totalRevenue: existingStat.totalRevenue + revenue, lastSold: now
           }).eq('id', item.name);
         } else {
           await supabase.from('product_stats').insert({
-            id: item.name, category: 'Menu Item',
-            totalSales: item.quantity, totalRevenue: revenue, lastSold: now
+            id: item.name, category: 'Menu Item', totalSales: item.quantity, totalRevenue: revenue, lastSold: now
           });
         }
       }
-
       await supabase.from('orders').update({ status: 'completed', revenueAdded: true }).eq('id', id);
       return res.json({ success: true });
     }
@@ -99,12 +87,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // --- INVENTORY ---
   if (resource === 'inventory') {
-    // GET /api/admin/inventory
     if (!id && req.method === 'GET') {
       const { data } = await supabase.from('inventory').select('*').order('id', { ascending: true });
       return res.json(data);
     }
-    // PATCH /api/admin/inventory/:id
     if (id && req.method === 'PATCH') {
       await supabase.from('inventory').update({ stock: req.body.stock }).eq('id', id);
       return res.json({ success: true });
@@ -152,10 +138,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!id && req.method === 'POST') {
       const { name, description, price, category, imageUrl } = req.body;
       const { data, error } = await supabase
-        .from('menu')
-        .insert({ name, description, price, category, imageUrl: imageUrl || null })
-        .select()
-        .single();
+        .from('menu').insert({ name, description, price, category, imageUrl: imageUrl || null }).select().single();
       if (error) return res.status(500).json({ error: 'Failed to add menu item' });
       return res.json({ success: true, id: data.id });
     }
@@ -191,14 +174,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const { data: completedOrders } = await supabase.from('orders').select('items').eq('status', 'completed');
       const productCounts: Record<string, number> = {};
       (completedOrders || []).forEach((o: any) => {
-        o.items.forEach((item: any) => {
-          productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity;
-        });
+        o.items.forEach((item: any) => { productCounts[item.name] = (productCounts[item.name] || 0) + item.quantity; });
       });
       const topProducts = Object.entries(productCounts)
         .map(([name, sales]) => ({ name, sales }))
-        .sort((a, b) => b.sales - a.sales)
-        .slice(0, 5);
+        .sort((a, b) => b.sales - a.sales).slice(0, 5);
 
       const { count: totalCustomers } = await supabase.from('users').select('*', { count: 'exact', head: true }).eq('role', 'customer');
       const { count: lowStockCount } = await supabase.from('inventory').select('*', { count: 'exact', head: true }).lte('stock', 'minStock');
