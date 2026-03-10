@@ -40,7 +40,7 @@ const VisitUs: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-coffee-900">Our Address</h4>
-                    <p className="text-coffee-700">123 Heritage Street, Barangay San Lorenzo, Makati City, 1223 Metro Manila</p>
+                    <p className="text-coffee-700">#2 Honradez Street, Tugatog, Malabon, Philippines</p>
                   </div>
                 </div>
 
