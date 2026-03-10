@@ -350,9 +350,9 @@ const MenuPage: React.FC = () => {
                       <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest">Send Payment via GCash</p>
                       <div className="flex justify-center">
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=09695591888`}
+                          src="https://bewjlgijjrsckzdmzbeu.supabase.co/storage/v1/object/public/menu-images/gcash.jpg"
                           alt="GCash QR Code"
-                          className="w-32 h-32 rounded-lg border border-blue-200 bg-white p-1"
+                          className="w-32 h-32 rounded-lg border border-blue-200 bg-white p-1 object-contain"
                         />
                       </div>
                       <p className="text-sm font-bold text-blue-900 tracking-wider">0969 559 1888</p>
