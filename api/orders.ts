@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const user = await authenticate(req);
   if (!requireAuth(user, res)) return;
 
-  const { items, total, paymentMethod, gcashNumber } = req.body;
+  const { items, total, paymentMethod, gcashNumber, gcashReceipt } = req.body;
   const id = 'ORD-' + Date.now();
   const numericTotal = parseFloat(total.replace('₱', ''));
 
@@ -22,6 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       total: numericTotal,
       paymentMethod,
       gcashNumber,
+      gcashReceipt: gcashReceipt || null,
       status: 'pending'
     })
     .select()

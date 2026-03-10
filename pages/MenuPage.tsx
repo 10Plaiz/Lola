@@ -11,6 +11,7 @@ const MenuPage: React.FC = () => {
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'gcash' | 'cash'>('cash');
   const [gcashNumber, setGcashNumber] = useState('');
+  const [gcashReceipt, setGcashReceipt] = useState<string | null>(null);
   const [isOrdering, setIsOrdering] = useState(false);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,8 +102,8 @@ const MenuPage: React.FC = () => {
       alert('Please sign in to place an order');
       return;
     }
-    if (paymentMethod === 'gcash' && !gcashNumber) {
-      alert('Please enter your GCash number');
+    if (paymentMethod === 'gcash' && !gcashReceipt) {
+      alert('Please upload your GCash payment receipt');
       return;
     }
 
@@ -120,7 +121,8 @@ const MenuPage: React.FC = () => {
           items: sanitizedCart,
           total: `₱${cartTotal}`,
           paymentMethod,
-          gcashNumber: paymentMethod === 'gcash' ? gcashNumber : undefined
+          gcashNumber: paymentMethod === 'gcash' ? '09695591888' : undefined,
+          gcashReceipt: paymentMethod === 'gcash' ? gcashReceipt : undefined
         })
       });
 
@@ -128,6 +130,7 @@ const MenuPage: React.FC = () => {
         setCart([]);
         setIsCheckoutOpen(false);
         setIsCartOpen(false);
+        setGcashReceipt(null);
         navigate('/dashboard');
       } else {
         const data = await res.json();
@@ -341,16 +344,58 @@ const MenuPage: React.FC = () => {
                 </div>
 
                 {paymentMethod === 'gcash' && (
-                  <div className="space-y-2 animate-fade-in">
-                    <label className="text-xs font-bold text-coffee-700 uppercase tracking-widest ml-1">GCash Number</label>
-                    <input 
-                      type="tel" 
-                      placeholder="0917 XXX XXXX"
-                      value={gcashNumber}
-                      onChange={(e) => setGcashNumber(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500"
-                    />
-                    <p className="text-[10px] text-coffee-500 italic">Lola's GCash: 0917 888 9999 (Please pay before pickup)</p>
+                  <div className="space-y-4 animate-fade-in">
+                    {/* GCash QR Code & Number */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 text-center space-y-3">
+                      <p className="text-xs font-bold text-blue-700 uppercase tracking-widest">Send Payment via GCash</p>
+                      <div className="flex justify-center">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=09695591888`}
+                          alt="GCash QR Code"
+                          className="w-48 h-48 rounded-xl border-2 border-blue-200 bg-white p-2"
+                        />
+                      </div>
+                      <p className="text-lg font-bold text-blue-900 tracking-wider">0969 559 1888</p>
+                      <p className="text-xs text-blue-600">Please send <span className="font-bold">₱{cartTotal}</span> to this number before uploading your receipt</p>
+                    </div>
+
+                    {/* Receipt Upload */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold text-coffee-700 uppercase tracking-widest ml-1">Upload Payment Receipt <span className="text-red-500">*</span></label>
+                      <div className="relative">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert('File too large. Max 5MB.');
+                                return;
+                              }
+                              const reader = new FileReader();
+                              reader.onloadend = () => setGcashReceipt(reader.result as string);
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-coffee-100 file:text-coffee-700 hover:file:bg-coffee-200"
+                        />
+                      </div>
+                      {gcashReceipt && (
+                        <div className="relative mt-2">
+                          <img src={gcashReceipt} alt="Receipt preview" className="w-full max-h-48 object-contain rounded-xl border border-slate-200" />
+                          <button 
+                            onClick={() => setGcashReceipt(null)}
+                            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      )}
+                      {!gcashReceipt && (
+                        <p className="text-[10px] text-red-500 italic ml-1">* Receipt upload is required to process your GCash order</p>
+                      )}
+                    </div>
                   </div>
                 )}
 
