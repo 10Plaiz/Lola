@@ -50,6 +50,38 @@ const HomePage: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  useEffect(() => {
+    console.log('[App] === Lola App Startup Diagnostics ===' );
+    console.log('[App] Timestamp:', new Date().toISOString());
+    console.log('[App] Location:', window.location.href);
+    console.log('[App] VITE_SUPABASE_URL configured:', !!import.meta.env.VITE_SUPABASE_URL);
+    console.log('[App] VITE_SUPABASE_ANON_KEY configured:', !!import.meta.env.VITE_SUPABASE_ANON_KEY);
+
+    // Test /api/health to verify backend + Supabase connectivity
+    fetch('/api/health')
+      .then(r => {
+        console.log('[App] /api/health status:', r.status);
+        return r.json();
+      })
+      .then(data => console.log('[App] /api/health response:', JSON.stringify(data)))
+      .catch(err => console.error('[App] /api/health FAILED:', err.message));
+
+    // Test /api/menu
+    fetch('/api/menu')
+      .then(r => {
+        console.log('[App] /api/menu status:', r.status);
+        return r.json();
+      })
+      .then(data => {
+        if (Array.isArray(data)) {
+          console.log('[App] /api/menu returned', data.length, 'items');
+        } else {
+          console.log('[App] /api/menu response (not array):', JSON.stringify(data));
+        }
+      })
+      .catch(err => console.error('[App] /api/menu FAILED:', err.message));
+  }, []);
+
   return (
     <AuthProvider>
       <Router>

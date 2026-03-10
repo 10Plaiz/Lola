@@ -7,8 +7,11 @@ export function getSupabase(): SupabaseClient {
   if (!supabaseClient) {
     const url = process.env.VITE_SUPABASE_URL;
     const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!url || !key) throw new Error('Missing Supabase credentials');
+    console.log('[getSupabase] VITE_SUPABASE_URL set:', !!url, url ? `(${url.substring(0, 30)}...)` : '(missing)');
+    console.log('[getSupabase] SUPABASE_SERVICE_ROLE_KEY set:', !!key, key ? `(${key.length} chars)` : '(missing)');
+    if (!url || !key) throw new Error(`Missing Supabase credentials: url=${!!url}, key=${!!key}`);
     supabaseClient = createClient(url, key);
+    console.log('[getSupabase] Client created successfully');
   }
   return supabaseClient;
 }
